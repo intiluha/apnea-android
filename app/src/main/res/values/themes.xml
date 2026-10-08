@@ -1,0 +1,10 @@
+<resources>
+    <style name="Theme.Apnea" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:navigationBarColor">@color/bg</item>
+    </style>
+    <color name="bg">#081214</color>
+    <color name="orb_core">#F0B878</color>
+    <color name="orb_edge">#D9803F</color>
+</resources>
