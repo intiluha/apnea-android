@@ -12,3 +12,7 @@ build:
 # Run unit tests
 test:
     nix-shell --run 'gradle --no-daemon testDebugUnitTest'
+
+# Delete build outputs and Gradle/Kotlin caches (everything `just build` regenerates)
+clean:
+    rm -rf .gradle .kotlin build app/build
