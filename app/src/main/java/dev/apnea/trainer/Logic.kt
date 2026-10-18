@@ -14,7 +14,10 @@ enum class Mode(val title: String, val tag: String, val hint: String) {
     FREE("Max Hold", "FREE", "Sit or lie down · relax your shoulders"),
     CO2("CO₂ Table", "TOLERANCE", "Builds tolerance to the urge to breathe"),
     O2("O₂ Table", "CAPACITY", "Builds your max breath-hold capacity"),
-    BOX("Box", "CALM", "4-4-4-4 · calm your nervous system"),
+    BOX("Box", "CALM", "4-4-4-4 · calm your nervous system");
+
+    /** The mode [step] tabs away, wrapping around (swipe navigation). */
+    fun cycle(step: Int) = entries[(ordinal + step).mod(entries.size)]
 }
 
 enum class Kind { BREATHE_UP, REST, READY, HOLD, INHALE, HOLD_FULL, EXHALE, HOLD_EMPTY;

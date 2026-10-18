@@ -32,6 +32,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,7 +49,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import java.text.DateFormat
+import kotlin.math.abs
 import java.util.Date
 
 // Dark palette from the web app.
@@ -87,6 +91,8 @@ fun ApneaApp(
     onKeepScreenOn: (Boolean) -> Unit,
 ) {
     val running = frame.running
+    val currentMode by rememberUpdatedState(mode)
+    val currentOnMode by rememberUpdatedState(onMode)
     LaunchedEffect(running) {
         onKeepScreenOn(running)
         while (running) withFrameNanos { onFrame() }
@@ -97,6 +103,17 @@ fun ApneaApp(
             Modifier
                 .fillMaxSize()
                 .background(Brush.verticalGradient(listOf(Bg2, Bg)))
+                .pointerInput(running) {
+                    // Horizontal swipe anywhere cycles modes, but only while idle.
+                    if (running) return@pointerInput
+                    var dx = 0f
+                    detectHorizontalDragGestures(
+                        onDragStart = { dx = 0f },
+                        onDragEnd = {
+                            if (abs(dx) > 64.dp.toPx()) currentOnMode(currentMode.cycle(if (dx < 0) 1 else -1))
+                        },
+                    ) { _, delta -> dx += delta }
+                }
         ) {
             Column(
                 Modifier

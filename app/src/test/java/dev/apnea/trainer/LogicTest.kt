@@ -17,6 +17,12 @@ class LogicTest {
         assertEquals("0:00", fmt(-3))
     }
 
+    @Test fun modeCycleWraps() {
+        assertEquals(Mode.CO2, Mode.FREE.cycle(1))
+        assertEquals(Mode.FREE, Mode.BOX.cycle(1))
+        assertEquals(Mode.BOX, Mode.FREE.cycle(-1))
+    }
+
     @Test fun co2Table() {
         val c = genCO2(180)
         assertEquals(8, c.rounds)
