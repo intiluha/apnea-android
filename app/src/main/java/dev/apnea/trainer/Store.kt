@@ -6,6 +6,40 @@ import org.json.JSONObject
 
 data class LogEntry(val label: String, val value: String, val at: Long)
 
+/** Newest-first history is capped at this many entries, both when logging and when importing. */
+const val HISTORY_MAX = 40
+
+private fun LogEntry.toJson() = JSONObject().put("label", label).put("value", value).put("at", at)
+
+private fun JSONArray.toHistory() = List(length()) { i ->
+    val e = getJSONObject(i)
+    LogEntry(e.optString("label"), e.optString("value"), e.optLong("at", 0))
+}
+
+/** The export format: a plain JSON array of `{label, value, at}` objects, newest first. */
+fun historyToJson(history: List<LogEntry>): String {
+    val h = JSONArray()
+    history.forEach { h.put(it.toJson()) }
+    return h.toString(2)
+}
+
+/**
+ * Reads an exported history: a bare array, or an object with a "history" array (the saved
+ * "apnea.v1" blob also qualifies). Entries without a label are dropped. Returns null if the
+ * text isn't one of those shapes.
+ */
+fun parseHistory(text: String): List<LogEntry>? = try {
+    val t = text.trim()
+    val arr = if (t.startsWith("[")) JSONArray(t) else JSONObject(t).getJSONArray("history")
+    arr.toHistory().filter { it.label.isNotEmpty() }
+} catch (e: Exception) {
+    null
+}
+
+/** Union of both lists without duplicates, newest first, capped at [HISTORY_MAX]. */
+fun mergeHistory(current: List<LogEntry>, imported: List<LogEntry>): List<LogEntry> =
+    (current + imported).distinct().sortedByDescending { it.at }.take(HISTORY_MAX)
+
 data class Saved(
     val pb: Int = 0,
     val last: Int = 0,
@@ -36,10 +70,7 @@ class Store(context: Context) {
             breatheUp = s.optBoolean("breatheUp", true),
             sound = s.optBoolean("sound", true),
             vibrate = s.optBoolean("vibrate", true),
-            history = List(h.length()) { i ->
-                val e = h.getJSONObject(i)
-                LogEntry(e.optString("label"), e.optString("value"), e.optLong("at", 0))
-            },
+            history = h.toHistory(),
         )
     } catch (e: Exception) {
         Saved()
@@ -47,7 +78,7 @@ class Store(context: Context) {
 
     fun save(s: Saved) {
         val h = JSONArray()
-        s.history.forEach { h.put(JSONObject().put("label", it.label).put("value", it.value).put("at", it.at)) }
+        s.history.forEach { h.put(it.toJson()) }
         val o = JSONObject()
             .put("pb", s.pb).put("last", s.last).put("count", s.count).put("maxHold", s.maxHold)
             .put("breatheUp", s.breatheUp).put("sound", s.sound).put("vibrate", s.vibrate)

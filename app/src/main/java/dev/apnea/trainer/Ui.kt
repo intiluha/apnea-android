@@ -88,6 +88,8 @@ fun ApneaApp(
     onSkip: () -> Unit,
     onSettings: (Saved) -> Unit,
     onClearLog: () -> Unit,
+    onExportLog: () -> Unit,
+    onImportLog: () -> Unit,
     onKeepScreenOn: (Boolean) -> Unit,
 ) {
     val running = frame.running
@@ -130,7 +132,7 @@ fun ApneaApp(
                     Stats(saved)
                     if (mode == Mode.CO2 || mode == Mode.O2) Plan(mode, saved.tableBasis)
                     Settings(saved, running, onSettings)
-                    History(saved, onClearLog)
+                    History(saved, onClearLog, onExportLog, onImportLog)
                     Safety()
                     Spacer(Modifier.height(8.dp))
                 }
@@ -396,11 +398,15 @@ private fun Toggle(title: String, sub: String, on: Boolean, onChange: (Boolean) 
 }
 
 @Composable
-private fun History(s: Saved, onClear: () -> Unit) {
+private fun History(s: Saved, onClear: () -> Unit, onExport: () -> Unit, onImport: () -> Unit) {
     Card {
         Column {
             SectionTitle("History", if (s.history.isNotEmpty()) "${s.history.size} logged  " else "") {
-                if (s.history.isNotEmpty()) Text("clear", color = Muted, fontSize = 12.sp, modifier = Modifier.clickable(onClick = onClear).padding(4.dp))
+                LinkAction("import", onImport)
+                if (s.history.isNotEmpty()) {
+                    LinkAction("export", onExport)
+                    LinkAction("clear", onClear)
+                }
             }
             if (s.history.isEmpty()) {
                 Text("No sessions yet. Your holds and completed tables will appear here.", color = Muted, fontSize = 13.sp)
@@ -419,6 +425,12 @@ private fun History(s: Saved, onClear: () -> Unit) {
             }
         }
     }
+}
+
+/** Small text button for section-header actions (import / export / clear). */
+@Composable
+private fun LinkAction(label: String, onClick: () -> Unit) {
+    Text(label, color = Muted, fontSize = 12.sp, modifier = Modifier.clickable(onClick = onClick).padding(4.dp))
 }
 
 @Composable
