@@ -28,4 +28,27 @@ The dev build installs side by side with any release build as **Apnea Dev** (`de
 It's signed with the checked-in `keystore/dev.keystore` (password `android`), so APKs built on different
 machines can upgrade each other in place.
 
+## Release
+
+```sh
+just release            # signed app/build/outputs/apk/release/app-release.apk
+just release-install    # …and adb install it
+just publish v0.1.0     # …and attach it to a new GitHub Release tagged v0.1.0
+```
+
+Releases are signed with the committed PKCS12 keystore `release.p12` (key alias `apnea`). Only its
+password is secret: the build fetches it with `pass Dev/apnea` the moment a release task is requested,
+and never for debug builds or tests. Keeping the keystore in the repo keeps the signing key stable
+across versions, which is what lets [Obtainium](https://github.com/ImranR98/Obtainium) update the app
+in place from this repository's GitHub Releases. There is no CI: releases are built on a machine
+that has `pass` and GPG.
+
+Setting up a fresh keystore (once, on the host):
+
+```sh
+keytool -genkeypair -storetype PKCS12 -keystore release.p12 -alias apnea \
+  -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=Apnea"
+pass insert Dev/apnea   # the password you just gave keytool
+```
+
 ⚠️ **Dry static only.** Never hold your breath in or near water without a trained buddy. This is not medical advice.

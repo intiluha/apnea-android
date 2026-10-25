@@ -4,6 +4,23 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// Release signing. The PKCS12 keystore ./release.p12 is committed (key alias "apnea"); only its
+// password is secret and lives in the developer's password store as `pass Dev/apnea`. The
+// password is fetched only when a release task was requested, so debug builds, tests and
+// `gradle help` never trigger a GPG pinentry prompt.
+val keystoreFile = rootProject.file("release.p12")
+val signingTaskNames = setOf("assembleRelease", "installRelease", "bundleRelease")
+val needsSigning = gradle.startParameter.taskNames.any { it.substringAfterLast(':') in signingTaskNames }
+
+fun fetchKeystorePassword(): String {
+    val proc = ProcessBuilder("pass", "Dev/apnea").redirectError(ProcessBuilder.Redirect.INHERIT).start()
+    val out = proc.inputStream.bufferedReader().readText()
+    val code = proc.waitFor()
+    val pw = out.lineSequence().firstOrNull()?.trim().orEmpty()
+    if (code != 0 || pw.isEmpty()) error("`pass Dev/apnea` failed (exit $code): store the release.p12 password there.")
+    return pw
+}
+
 android {
     namespace = "dev.apnea.trainer"
     compileSdk = 36
@@ -26,6 +43,19 @@ android {
             keyAlias = "apneadev"
             keyPassword = "android"
         }
+        // Only configured when the keystore is present, so a checkout without it still builds debug.
+        if (keystoreFile.exists()) {
+            create("release") {
+                storeFile = keystoreFile
+                storeType = "PKCS12"
+                keyAlias = "apnea"
+                if (needsSigning) {
+                    val pw = fetchKeystorePassword()
+                    storePassword = pw
+                    keyPassword = pw
+                }
+            }
+        }
     }
 
     buildTypes {
@@ -34,8 +64,8 @@ android {
             versionNameSuffix = "-dev"
         }
         release {
-            isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            signingConfig = signingConfigs.findByName("release")
+            isMinifyEnabled = false
         }
     }
 
