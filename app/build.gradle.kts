@@ -5,21 +5,15 @@ plugins {
 }
 
 // Release signing. The PKCS12 keystore ./release.p12 is committed (key alias "apnea"); only its
-// password is secret and lives in the developer's password store as `pass Dev/apnea`. The
-// password is fetched only when a release task was requested, so debug builds, tests and
-// `gradle help` never trigger a GPG pinentry prompt.
+// password is secret. `just release` prompts for it and passes it in as KEYSTORE_PASSWORD, which is
+// read only when a release task was requested, so debug builds, tests and `gradle help` never need it.
 val keystoreFile = rootProject.file("release.p12")
 val signingTaskNames = setOf("assembleRelease", "installRelease", "bundleRelease")
 val needsSigning = gradle.startParameter.taskNames.any { it.substringAfterLast(':') in signingTaskNames }
 
-fun fetchKeystorePassword(): String {
-    val proc = ProcessBuilder("pass", "Dev/apnea").redirectError(ProcessBuilder.Redirect.INHERIT).start()
-    val out = proc.inputStream.bufferedReader().readText()
-    val code = proc.waitFor()
-    val pw = out.lineSequence().firstOrNull()?.trim().orEmpty()
-    if (code != 0 || pw.isEmpty()) error("`pass Dev/apnea` failed (exit $code): store the release.p12 password there.")
-    return pw
-}
+fun keystorePassword(): String =
+    providers.environmentVariable("KEYSTORE_PASSWORD").orNull?.takeIf { it.isNotEmpty() }
+        ?: error("KEYSTORE_PASSWORD is not set: run `just release`, which prompts for the release.p12 password.")
 
 android {
     namespace = "xyz.intiluha.apnea"
@@ -50,7 +44,7 @@ android {
                 storeType = "PKCS12"
                 keyAlias = "apnea"
                 if (needsSigning) {
-                    val pw = fetchKeystorePassword()
+                    val pw = keystorePassword()
                     storePassword = pw
                     keyPassword = pw
                 }

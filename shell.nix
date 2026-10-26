@@ -1,4 +1,4 @@
-# Dev environment: everything the Justfile needs. Usage: `nix-shell`, then `just`. Releases also need `pass` on the host.
+# Dev environment: everything the Justfile needs. Usage: `nix-shell`, then `just`.
 { pkgs ? import (fetchTarball "https://channels.nixos.org/nixos-26.05/nixexprs.tar.xz") {
     config = { allowUnfree = true; android_sdk.accept_license = true; };
   }

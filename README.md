@@ -45,17 +45,16 @@ just publish v0.1.0     # …and attach it to a new GitHub Release tagged v0.1.0
 ```
 
 Releases are signed with the committed PKCS12 keystore `release.p12` (key alias `apnea`). Only its
-password is secret: the build fetches it with `pass Dev/apnea` the moment a release task is requested,
-and never for debug builds or tests. Keeping the keystore in the repo keeps the signing key stable
-across versions, which is what lets [Obtainium](https://github.com/ImranR98/Obtainium) update the app
-in place from this repository's GitHub Releases. There is no CI: releases are built on a machine
-that has `pass` and GPG, the one thing `nix-shell` doesn't provide.
+password is secret: `just release` prompts for it and hands it to Gradle as `KEYSTORE_PASSWORD`, which
+is read only when a release task runs, never for debug builds or tests. Set the variable yourself to
+skip the prompt. Keeping the keystore in the repo keeps the signing key stable across versions, which
+is what lets [Obtainium](https://github.com/ImranR98/Obtainium) update the app in place from this
+repository's GitHub Releases. There is no CI: releases are built locally.
 
 Setting up a fresh keystore (once, inside `nix-shell`):
 
 ```sh
-> just keystore           # prompts for a password, writes release.p12
-> pass insert Dev/apnea   # the password you just gave keytool
+> just keystore           # keytool prompts for a password; `just release` will ask for the same one
 > git add release.p12
 ```
 
