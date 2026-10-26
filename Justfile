@@ -4,7 +4,7 @@
 # Keystore alias and the `pass Dev/<app>` entry holding its password
 app := "apnea"
 # applicationId of the release build; the debug build adds a suffix so both install side by side
-pkg := "dev.apnea.trainer"
+pkg := "xyz.intiluha.apnea"
 debug_pkg := pkg + ".dev"
 activity := pkg + ".MainActivity"
 debug_apk := "app/build/outputs/apk/debug/app-debug.apk"

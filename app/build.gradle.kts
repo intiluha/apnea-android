@@ -22,12 +22,12 @@ fun fetchKeystorePassword(): String {
 }
 
 android {
-    namespace = "dev.apnea.trainer"
+    namespace = "xyz.intiluha.apnea"
     compileSdk = 36
     buildToolsVersion = "36.0.0"
 
     defaultConfig {
-        applicationId = "dev.apnea.trainer"
+        applicationId = "xyz.intiluha.apnea"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

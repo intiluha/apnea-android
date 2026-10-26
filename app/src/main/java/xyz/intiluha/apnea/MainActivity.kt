@@ -1,4 +1,4 @@
-package dev.apnea.trainer
+package xyz.intiluha.apnea
 
 import android.net.Uri
 import android.os.Bundle

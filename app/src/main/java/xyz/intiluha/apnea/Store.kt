@@ -1,4 +1,4 @@
-package dev.apnea.trainer
+package xyz.intiluha.apnea
 
 import android.content.Context
 import org.json.JSONArray

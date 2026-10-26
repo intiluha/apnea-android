@@ -32,7 +32,7 @@ nix-shell
 
 For a one-off from outside the shell, `nix-shell --run 'just check'` does the same.
 
-The dev build installs side by side with any release build as **Apnea Dev** (`dev.apnea.trainer.dev`).
+The dev build installs side by side with any release build as **Apnea Dev** (`xyz.intiluha.apnea.dev`).
 It's signed with the checked-in `keystore/dev.keystore` (password `android`), so APKs built on different
 machines can upgrade each other in place.
 

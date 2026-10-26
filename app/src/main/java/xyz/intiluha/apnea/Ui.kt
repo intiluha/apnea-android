@@ -1,4 +1,4 @@
-package dev.apnea.trainer
+package xyz.intiluha.apnea
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween

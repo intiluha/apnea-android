@@ -1,4 +1,4 @@
-package dev.apnea.trainer
+package xyz.intiluha.apnea
 
 import kotlin.math.PI
 import kotlin.math.cos

@@ -1,4 +1,4 @@
-package dev.apnea.trainer
+package xyz.intiluha.apnea
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
