@@ -1,4 +1,4 @@
-# Build environment for the Android app. Usage: nix-shell --run 'gradle assembleDebug'
+# Dev environment: everything the Justfile needs. Usage: `nix-shell`, then `just`. Releases also need `pass` on the host.
 { pkgs ? import (fetchTarball "https://channels.nixos.org/nixos-26.05/nixexprs.tar.xz") {
     config = { allowUnfree = true; android_sdk.accept_license = true; };
   }
@@ -14,7 +14,7 @@ let
   sdk = "${android.androidsdk}/libexec/android-sdk";
 in
 pkgs.mkShell {
-  packages = [ pkgs.jdk17 pkgs.gradle android.androidsdk pkgs.just ];
+  packages = [ pkgs.jdk17 pkgs.gradle android.androidsdk pkgs.just pkgs.gh ];
   ANDROID_HOME = sdk;
   ANDROID_SDK_ROOT = sdk;
   JAVA_HOME = pkgs.jdk17.home;
