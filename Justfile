@@ -1,10 +1,10 @@
 # Apnea task runner. Run `just` (no args) to list recipes.
 # Run everything from inside `nix-shell` (see README): it provides JDK 17, Gradle, the Android SDK, adb, gh and just itself.
 
-# Keystore alias
+# App name: keystore alias and the last segment of the applicationId
 app := "apnea"
 # applicationId of the release build; the debug build adds a suffix so both install side by side
-pkg := "xyz.intiluha.apnea"
+pkg := "xyz.intiluha." + app
 debug_pkg := pkg + ".dev"
 activity := pkg + ".MainActivity"
 debug_apk := "app/build/outputs/apk/debug/app-debug.apk"
