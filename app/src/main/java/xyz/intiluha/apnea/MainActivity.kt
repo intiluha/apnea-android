@@ -105,9 +105,9 @@ class MainActivity : ComponentActivity() {
             toast("Couldn't read the file"); return
         }
         val imported = parseHistory(text) ?: run { toast("Not an Apnea history file"); return }
-        val merged = mergeHistory(saved.history, imported)
-        val added = merged.size - saved.history.size
-        update(saved.copy(history = merged))
+        val next = saved.withImported(imported)
+        val added = next.count - saved.count
+        update(next)
         toast(if (added > 0) "Imported $added new entries" else "Nothing new to import")
     }
 

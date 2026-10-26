@@ -3,6 +3,7 @@ package xyz.intiluha.apnea
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
+import kotlin.math.max
 
 data class LogEntry(val label: String, val value: String, val at: Long)
 
@@ -39,6 +40,30 @@ fun parseHistory(text: String): List<LogEntry>? = try {
 /** Union of both lists without duplicates, newest first, capped at [HISTORY_MAX]. */
 fun mergeHistory(current: List<LogEntry>, imported: List<LogEntry>): List<LogEntry> =
     (current + imported).distinct().sortedByDescending { it.at }.take(HISTORY_MAX)
+
+/** Seconds of a logged hold (an "m:ss" value), or null for table entries and anything else. */
+fun LogEntry.holdSeconds(): Int? {
+    val m = Regex("""(\d+):(\d\d)""").matchEntire(value) ?: return null
+    return m.groupValues[1].toInt() * 60 + m.groupValues[2].toInt()
+}
+
+/**
+ * Merges an imported history into this state and recomputes the stats it implies: the personal
+ * best is the best of the saved one and every logged hold, the last hold is the newest logged
+ * hold, and every entry not seen before counts as a session (even one the cap then drops).
+ */
+fun Saved.withImported(imported: List<LogEntry>): Saved {
+    val merged = mergeHistory(history, imported)
+    val holds = merged.mapNotNull { it.holdSeconds() }
+    val best = max(pb, holds.maxOrNull() ?: 0)
+    return copy(
+        pb = best,
+        maxHold = if (best > pb) best else maxHold,
+        last = holds.firstOrNull() ?: last,
+        count = count + imported.distinct().count { it !in history },
+        history = merged,
+    )
+}
 
 data class Saved(
     val pb: Int = 0,

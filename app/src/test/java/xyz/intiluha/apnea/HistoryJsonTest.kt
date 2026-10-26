@@ -34,4 +34,41 @@ class HistoryJsonTest {
         assertEquals(HISTORY_MAX, merged.size)
         assertEquals(a, merged.first())
     }
+
+    @Test fun holdSecondsParsesOnlyTimes() {
+        assertEquals(90, a.holdSeconds())
+        assertEquals(70, c.holdSeconds())
+        assertNull(b.holdSeconds())
+        assertNull(LogEntry("Max hold", "1:5", 1).holdSeconds())
+    }
+
+    @Test fun importRecomputesStatsFromHistory() {
+        val fresh = Saved().withImported(listOf(c, a, b))
+        assertEquals(90, fresh.pb)
+        assertEquals(90, fresh.maxHold)
+        assertEquals(90, fresh.last)
+        assertEquals(3, fresh.count)
+        assertEquals(listOf(a, b, c), fresh.history)
+    }
+
+    @Test fun importKeepsBetterSavedStatsAndCountsOnlyNewEntries() {
+        val newer = LogEntry("Max hold", "1:20", 4000)
+        val s = Saved(pb = 120, last = 80, count = 7, maxHold = 120, history = listOf(newer, a))
+        val next = s.withImported(listOf(a, b, c))
+        assertEquals(120, next.pb)
+        assertEquals(120, next.maxHold)
+        assertEquals(80, next.last)
+        assertEquals(9, next.count)
+        assertEquals(listOf(newer, a, b, c), next.history)
+        // Importing the same file again changes nothing.
+        assertEquals(next, next.withImported(listOf(a, b, c)))
+    }
+
+    @Test fun importCountsEntriesTheCapDrops() {
+        val many = List(HISTORY_MAX) { LogEntry("Max hold", "0:30", 1000L + HISTORY_MAX - it) }
+        val s = Saved(count = HISTORY_MAX, history = many)
+        val next = s.withImported(listOf(LogEntry("Max hold", "0:20", 5)))
+        assertEquals(HISTORY_MAX + 1, next.count)
+        assertEquals(many, next.history)
+    }
 }
